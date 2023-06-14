@@ -1,0 +1,27 @@
+#!/bin/bash
+
+base_url="http://0x%s.a.hackycorp.com"
+red_threshold=10
+
+for i in $(seq -f "%02g" 0 255); do
+    domain=$(printf $base_url $i)
+    image_url="$domain/logo.png"
+
+    response=$(curl -s -o /dev/null -w "%{http_code}" $image_url)
+    if [ $response -eq 200 ]; then
+        image_path="/tmp/logo-$i.png"
+        curl -s -o $image_path $image_url
+        red_pixels=$(convert $image_path -format "%[fx:(mean.r*255)]" info:)
+        red_value=${red_pixels%.*}
+
+        if [ $red_value -gt $red_threshold ]; then
+            echo "Clé trouvée sur le domaine : $domain"
+            rm $image_path
+            exit 0
+        fi
+
+        rm $image_path
+    fi
+done
+
+echo "La page avec la clé rouge n'a pas été trouvée."

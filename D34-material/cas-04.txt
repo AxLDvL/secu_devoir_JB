@@ -1,0 +1,165 @@
+CAS D'ETUDE 04
+
+1. Retrouve le contenu du fichier robots.txt du site principal de Hackycorp.
+
+https://hackycorp.com/robots.txt
+robots.txt
+af9c328a-02b4-439d-91c6-f46ab4a0835b 
+
+2. Souvent, les pages d’erreur mal configurées révèlent de précieuses information. Que
+remarques-tu sur le site principal ?
+
+lorsque je vais sur une page qui n'existe pas (erreur 404) j'obtiens la clé recon-01:
+404 page! You solved recon_01
+The key for this challenge is: aeaee57f-2a82-41da-bc4c-d081c8cddfc8
+
+3. De nombreux sites web contiennent, à la racine, un fichier security.txt permettant de dire aux chercheurs en sécurité comment faire remonter une information sur une faille ou une vulnérabilité. Mais est-ce vraiment une bonne idée ?
+
+https://hackycorp.com/.well-known/security.txt
+# Please don't report any security issue for this site
+# This is a recon challenge and the key for this exercise is 
+# 99685e30-7061-4ac0-83bf-4ccc0409faac
+
+4. Tu vas maintenant profiter d’une mauvaise configuration des serveurs web encore très courante : le directory listing. Elle te permettra de trouver, sur le site principal, un répertoire dont tu peux découvrir le contenu.
+
+https://hackycorp.com/images/key.txt
+Nice find! You solved recon_03
+The key for this challenge is 93790afa-6985-47fd-b564-aa7ba59ed6a9
+
+5. Tu vas pouvoir tenter de deviner le nom d’un répertoire couramment utilisé pour les
+pages d’administration. En effet, avant de lancer un brute-force sur l’arborescence d’un site web, il est souvent payant de tester les noms de répertoires les plus communément répandus (applications connues, outils du marché).
+
+https://hackycorp.com/admin/
+Well done! You solved recon_04
+The key for this exercise is: ad1d44d6-ab73-4640-8291-c5bf2343e2a5
+
+6. Dans cet exercice, tu vas tenter de trouver un répertoire qui n’est pas directement
+accessible. Dans ce cas, des outils comme patator, FFUF ou WFuzz vous seront utiles.
+
+ ffuf -w /usr/share/wordlists/dirb/common.txt -u https://hackycorp.com/FUZZ
+
+        /'___\  /'___\           /'___\
+       /\ \__/ /\ \__/  __  __  /\ \__/
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/
+         \ \_\   \ \_\  \ \____/  \ \_\
+          \/_/    \/_/   \/___/    \/_/
+
+       v2.0.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : https://hackycorp.com/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/wordlists/dirb/common.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+________________________________________________
+
+[Status: 200, Size: 16011, Words: 5888, Lines: 278, Duration: 47ms]
+    * FUZZ:
+
+[Status: 301, Size: 178, Words: 6, Lines: 8, Duration: 143ms]
+    * FUZZ: admin
+
+[Status: 301, Size: 178, Words: 6, Lines: 8, Duration: 93ms]
+    * FUZZ: images
+
+[Status: 200, Size: 16011, Words: 5888, Lines: 278, Duration: 98ms]
+    * FUZZ: index.html
+
+[Status: 200, Size: 121, Words: 14, Lines: 7, Duration: 95ms]
+    * FUZZ: robots.txt
+
+[Status: 301, Size: 178, Words: 6, Lines: 8, Duration: 120ms]
+    * FUZZ: startpage
+
+=> https://hackycorp.com/startpage
+It works! You solved recon_05
+The key for this exercise is: 498621b0-17fe-4ebb-8324-3de7743fea51
+
+**********************************************************
+Le site web peut bloquer les tentatives de fuzzing de répertoires. Certains sites web mettent en place des mesures de sécurité pour détecter et bloquer ce type d'activité.
+
+Votre adresse IP peut avoir été bloquée par le serveur du site web en raison du nombre de requêtes que vous avez envoyées. Dans ce cas, vous pourriez envisager de ralentir la vitesse de vos requêtes avec l'option -p, d'utiliser un VPN ou un proxy pour changer votre adresse IP, ou d'attendre un certain temps avant de réessayer.
+**********************************************************
+
+7. Sauras-tu trouver le virtualhost par défaut du serveur principal ?
+ dig +short hackycorp.com
+51.158.147.132
+
+┌──(axl㉿DESKTOP-795T47Q)-[~]
+└─$ curl -H "Host: randomhost" http://51.158.147.132
+<h1>Well done! You solved recon_06 </h1>
+The key for this exercise is 5cf83b5d-eb6c-4eee-af6c-945f9aed8dfd
+
+8. Même chose que précédemment, mais avec le virtualhost par défaut du serveur
+principal sur transport TLS.
+
+curl -k -H "Host: rando" https://51.158.147.132
+<h1>Well done! You solved recon_07</h1>
+The key for this exercise is 23eafa56-6d55-4b78-8307-24e7dc2ce5e6
+
+9. Dans cet exercice, nous allons nous intéresser aux entêtes de la réponse HTTP.
+
+curl -I http://hackycorp.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 26 May 2023 15:06:23 GMT
+Content-Type: text/html
+Content-Length: 16011
+Last-Modified: Tue, 31 Mar 2020 03:12:16 GMT
+Connection: keep-alive
+ETag: "5e82b510-3e8b"
+pentesterlab_recon_09: 99d0738b-1e52-4a00-8885-b15894b2c79e
+Accept-Ranges: bytes
+
+10. Dans cet exercice, nous nous intéressons aux noms alternatifs présents dans le
+certificat du site. Utilise ton navigateur ou encore openssl…
+
+echo | openssl s_client -servername hostname -connect hackycorp.com:443 2>/dev/null | openssl x509 -noout -text | grep DNS:
+                DNS:66177e3f25e3ea0713807b1dc5f0b9df.hackycorp.com, DNS:hackycorp.com, DNS:www.hackycorp.com
+
+=>
+montre trois noms de domaine couverts par le certificat SSL de hackycorp.com : "66177e3f25e3ea0713807b1dc5f0b9df.hackycorp.com", "hackycorp.com" et "www.hackycorp.com". Cela signifie que le certificat SSL peut être utilisé pour sécuriser les connexions à ces trois domaines.
+
+cela peut présenter des problèmes de sécurité dans certains contextes :
+
+Révélation d'informations : Les noms de domaine listés dans le certificat peuvent révéler des informations sur l'infrastructure du serveur ou sur les applications et services hébergés, qui pourraient être exploités par un attaquant.
+
+Hébergement de contenu malveillant : Si le certificat est mal configuré ou si le contrôle des sous-domaines est faible, un attaquant pourrait être en mesure d'héberger du contenu malveillant sous un sous-domaine valide couvert par le certificat. Cela pourrait tromper les utilisateurs et les systèmes de sécurité en leur faisant croire que le contenu est digne de confiance.
+
+Mauvaise configuration : Si un sous-domaine listé dans le certificat n'est pas correctement sécurisé, il pourrait être exploité pour attaquer le domaine principal ou d'autres sous-domaines sécurisés par le même certificat.
+
+Ainsi, bien que la présence de noms de domaine supplémentaires dans le champ SAN ne soit pas une faille de sécurité, elle peut révéler des informations et ouvrir des vecteurs d'attaque si la configuration et la gestion du serveur et des sous-domaines ne sont pas effectuées de manière appropriée.
+
+11. Dans cet exercice, tu vas effectuer une reconnaissance visuelle pour retrouver
+l’application avec la clé en rouge.
+
+
+12. Il s’agit maintenant de brute forcer un virtualhost en manipulant l’entête Host. Il n’y a pas de résolution DNS sur cet hôte. Tu dois donc ciblé hackycorp.com et bruteforcer le virtualhost qui termine par .hackycorp.com.
+
+
+***************question 18**********
+https://github.com/hackycorp/test1/commit/ea10cd9077184466d048ab77ba7e67c4f5972e9a#comments
+Hacky Dev
+*************************************
+
+*************question 10 ************
+echo | openssl s_client -servername hostname -connect hackycorp.com:443 2>/dev/null | openssl x509 -noout -text | grep DNS:
+                DNS:66177e3f25e3ea0713807b1dc5f0b9df.hackycorp.com, DNS:hackycorp.com, DNS:www.hackycorp.com
+*************************************
+
+*************question11**************
+hackycorp.zh
+*************************************
+
+************question22***************
+https://github.com/hackycorp/repo9/commit/e8fec2d079cf9bfdf782a9ce4aab8ae8ce947548
+This is the key for RECON_22: 3ee505c2-8aa9-4d5e-810e-921778dce1e6
+*************************************
+
+
+

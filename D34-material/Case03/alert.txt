@@ -1,0 +1,10 @@
+SEVERITY : HIGH DATE : Feb, 25, 2022 11:34 AM EVENTID : 115 RULENAME : SOC165 - Possible SQL Injection Pauload Detected TYPE : Web attack DETAILS :
+Level : Security Analyst
+Hostname : WebServer1001
+Destination IP Address : 172.16.17.18
+Source IP Address : 167.99.169.17
+HTTP Request Method : GET
+Requested URL : https://172.16.17.18/search/?q=%22%20OR%201%20%3D%201%20--%20-
+User-Agent : Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1
+Alert Trigger Reason : Requested URL Contains OR 1 = 1
+Device Action : Allowed
